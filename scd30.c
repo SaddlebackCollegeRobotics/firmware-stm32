@@ -38,9 +38,82 @@ uint8_t SCD30_Get_Data_Ready_Status() {
 
 //
 
-void SCD30_Get_Data (*SCD30_Data data) {
+void SCD30_Get_Data (struct SCD30_Data * data) {
 
-};
-void SCD30_Toggle_ASC() {
+	while (SCD30_Get_Data_Ready_Status() != 1)
+	{
+		HAL_Delay(2000);
+	}
+
+	uint8_t pData[3] = {0xC2, 0x03, 0x00};
+	HAL_I2C_Master_Transmit(&hi2c1, SCD30_Address, pData, 3, 200);
+
+	HAL_Delay(3);
+	uint8_t buffer[19] = {0xC3};
+	HAL_I2C_Master_Receive(&hi2c1, SCD30_Address, buffer, 19, 200);
+
+	//CO2 values
+	unsigned int tempU32;
+	// read data is in a buffer. In case of I2C CRCs have been removed
+	// beforehand. Content of the buffer is the following
+	unsigned char temp_buffer[4];
+	temp_buffer[0] = buffer[1]; //  MMSB CO2
+	temp_buffer[1] = buffer[2]; //  MLSB CO2
+	temp_buffer[2] = buffer[4]; //  LMSB CO2
+	temp_buffer[3] = buffer[5]; //  LLSB CO2
+	// cast 4 bytes to one unsigned 32 bit integer
+	tempU32 = (unsigned int)((((unsigned int)buffer[0]) << 24) |
+	(((unsigned int)buffer[1]) << 16) |
+	(((unsigned int)buffer[2]) << 8)  |
+	((unsigned int)buffer[3]));
+	// cast unsigned 32 bit integer to 32 bit float
+	data->co2Concentration = *(float*)&tempU32;
+
+	//Temperature values
+	temp_buffer[0] = buffer[7]; //  MMSB Temperature
+	temp_buffer[1] = buffer[8]; //  MLSB Temperature
+	temp_buffer[2] = buffer[10]; //  LMSB Temperature
+	temp_buffer[3] = buffer[11]; //  LLSB Temperature
+	// cast 4 bytes to one unsigned 32 bit integer
+	tempU32 = (unsigned int)((((unsigned int)buffer[0]) << 24) |
+	(((unsigned int)buffer[1]) << 16) |
+	(((unsigned int)buffer[2]) << 8)  |
+	((unsigned int)buffer[3]));
+	// cast unsigned 32 bit integer to 32 bit float
+	data->temperature = *(float*)&tempU32;
+
+	//Humidity values
+	temp_buffer[0] = buffer[13]; //  MMSB Humidity
+	temp_buffer[1] = buffer[14]; //  MLSB Humidity
+	temp_buffer[2] = buffer[16]; //  LMSB Humidity
+	temp_buffer[3] = buffer[17]; //  LLSB Humidity
+	// cast 4 bytes to one unsigned 32 bit integer
+	tempU32 = (unsigned int)((((unsigned int)buffer[0]) << 24) |
+	(((unsigned int)buffer[1]) << 16) |
+	(((unsigned int)buffer[2]) << 8)  |
+	((unsigned int)buffer[3]));
+	// cast unsigned 32 bit integer to 32 bit float
+	data->rHumidity = *(float*)&tempU32;
+
+
+}
+
+void SCD30_Toggle_ASC() { //1.4.6 (De-)Activate Automatic Self-Calibration (ASC)
+
+}
+
+void SCD30_Set_FRC() { //Set Forced Recalibration value (FRC)
+
+}
+
+void SCD30_Set_Temp_Offset() {
+
+}
+
+void SCD30_Set_Altitude_Compensation() {
+
+}
+
+void SCD30_Get_Firmware_Version() {
 
 }
