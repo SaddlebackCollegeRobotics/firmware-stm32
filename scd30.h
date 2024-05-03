@@ -11,13 +11,16 @@ struct SCD30_Data {
 };
 
 struct SCD30 {
+	uint8_t channel;
 	SCD30_Data data;
 };
 
-struct SCD30 scd30_init();
+// below are functions definitions of struct
+struct SCD30 scd30_init(uint8_t ch);
 float SCD30_Get_Temperature(struct SCD30* scd);
 float SCD30_Get_rHumidity(struct SCD30* scd);
 float SCD30_Get_CO2(struct SCD30* scd);
+void  SCD30_Set_Data(); // refresh
 
 // below are function definitions for direct sensor control
 void SCD30_Trigger_Continuous_Measurement(uint16_t pressure_compensation = 0);
@@ -31,5 +34,7 @@ void SCD30_Set_Temp_Offset();
 void SCD30_Set_Altitude_Compensation();
 void SCD30_Get_Firmware_Version();
 
+// below is the function definition for mux control
+void XXX_Set_Channel(uint8_t ch);
 
 #endif /* INC_SCD30_H_ */
